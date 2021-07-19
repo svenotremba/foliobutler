@@ -1,0 +1,5 @@
+setuptools~=50.3.1
+click~=7.1.2
+requests~=2.25.1
+ib_insync~=0.9.66
+python_dotenv~=0.18.0
