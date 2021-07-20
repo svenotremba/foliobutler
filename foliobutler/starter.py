@@ -3,6 +3,51 @@ from dotenv import dotenv_values
 import os, click, logging
 from ib_insync import IBC, IB, Forex, util, Stock, Order
 
+def create_config(env):
+	if not os.path.exists(os.path.dirname(env)):
+		os.mkdir(os.path.dirname(env))
+	if 'EMAIL' in os.environ:
+		email = os.environ['EMAIL']
+	else:
+		email = input("Enter your Foliobutler Email: ")
+	
+	if 'API_KEY' in os.environ:
+		api = os.environ['API_KEY']
+	else:
+		api = input("Enter your Foliobutler Api-Key: ")
+
+	if 'IBC_twsVersion' in os.environ:
+		twsversion = os.environ['IBC_twsVersion']
+	else:
+		twsversion = input("Enter your TWS Version(e.g. 981): ")
+
+	if 'IBC_gateway' in os.environ:
+		gateway = os.environ['IBC_gateway'].upper() == 'TRUE'
+	else:
+		gateway = click.confirm('Do you use IB - Gateway?', default=True)
+
+	if 'IBC_tradingMode' in os.environ:
+		tradingmode = os.environ['IBC_tradingMode']
+	else:
+		tradingmode = 'live' if click.confirm('Live-Trading?', default=True) else 'paper'
+
+	if 'IBC_ibcPath' in os.environ:
+		ibcPath = os.environ['IBC_ibcPath']
+	else:
+		ibcPath = click.prompt('Please enter the path to IBC:', default=os.path.join(os.path.expanduser("~"),'opt', 'ibc'))
+
+	if 'ibcIniPath' in os.environ:
+		ibcIniPath = os.environ['ibcIniPath']
+	else:
+		ibcIniPath = click.prompt('Please enter the path to IBC-Ini-Files:', default=os.path.dirname(env))
+
+	f = open(env, "w")
+	f.write("EMAIL={}\nAPI_KEY={}\n".format(email, api))
+	f.write("IBC_twsVersion={}\nIBC_gateway={}\n".format(twsversion, gateway))
+	f.write("IBC_tradingMode={}\nIBC_ibcPath='{}'\n".format(tradingmode, ibcPath))
+	f.write("ibcIniPath='{}'\n".format(ibcIniPath))
+	f.close()
+
 
 def connected_ib(config, api_ip, api_port):
 	ib = IB()
@@ -91,8 +136,7 @@ def sync(account, config, api_ip, api_port, fb_positions, fb_orders):
 	ib.disconnect()
 
 
-
-def in_sync_test(config, api_ip, api_port):
+def old_in_sync_test(config, api_ip, api_port):
 	from datetime import datetime
 	logging.debug(datetime.now().strftime("%m/%d/%Y, %H:%M:%S"))
 	ib = connected_ib(config, api_ip, api_port)
@@ -112,6 +156,7 @@ def in_sync_test(config, api_ip, api_port):
 def env_path():
 	return os.path.join(os.path.expanduser("~"),'Documents', 'foliobutler')
 
+
 def env_location():
 	return os.path.join(env_path(), '.env')
 
@@ -119,7 +164,7 @@ def env_location():
 @click.command()
 @click.option('--env', default=env_location(),
 			  help='Location of Enviroment-file. Default {}'.format(env_location()))
-@click.option('--action', default='sync', help='in_sync_test, sync')
+@click.option('--action', default='sync', help='init, add_account, sync')
 @click.option('--ip', default='127.0.0.1', help='IP')
 @click.option('--port', default=1707, help='Port')
 def click_starter(env, action, ip, port):
@@ -128,6 +173,9 @@ def click_starter(env, action, ip, port):
 	logging.getLogger("ib_insync.client").disabled = True
 	logging.getLogger("ib_insync.ib").disabled = True
 	logging.getLogger("urllib3.connectionpool").disabled = True
+
+	if action.lower() == 'init':
+		return create_config(env)
 
 	if not os.path.exists(os.path.dirname(env)):
 		logging.error("Enviroment Path not exists: {}".format(os.path.dirname(env)))
@@ -142,9 +190,6 @@ def click_starter(env, action, ip, port):
 
 
 	config = dotenv_values(env)
-	print("config:", env)
-	if action.lower() == "in_sync_test":
-		return in_sync_test(config, port)
 	token = get_token(config['EMAIL'], config['API_KEY'])
 	folios = get_folios(token)
 	for folioname in list(folios)[-3:]:

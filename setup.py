@@ -1,11 +1,11 @@
 from setuptools import setup
 
 setup(name='foliobutler',
-	  version='0.1',
+	  version='0.2',
 	  description='Sync your Interactive Brokers account with your Folio in Foliobutler',
 	  url='https://github.com/svenotremba/foliobutler',
 	  author='Sven',
-	  install_requires=[            # I get to this in a second
+	  install_requires=[
           'setuptools',
           'click',
           'requests',
