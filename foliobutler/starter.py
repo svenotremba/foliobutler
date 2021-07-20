@@ -3,7 +3,9 @@ from dotenv import dotenv_values
 import os, click, logging
 from ib_insync import IBC, IB, Forex, util, Stock, Order
 
-def create_config(env):
+def create_config(env=None):
+	if env == None:
+		env = env_location()
 	if not os.path.exists(os.path.dirname(env)):
 		os.mkdir(os.path.dirname(env))
 	if 'EMAIL' in os.environ:
@@ -104,8 +106,6 @@ def sync(account, config, api_ip, api_port, fb_positions, fb_orders):
 			   ib_stock.contract.currency == currency and\
 			   ib_stock.contract.secType == type and\
 			   ib_stock.order.account == account:
-				#order = ib_stock['order']
-				#print(ib_stock)
 				if ib_stock.orderStatus.status in ['PreSubmitted', 'Submitted']:
 					if ib_stock.order.action == 'SELL':
 						ib_soll = ib_soll - ib_stock.order.totalQuantity
@@ -200,8 +200,8 @@ def click_starter(env, action, ip, port):
 
 if __name__ == "__main__":
 	os.system('cls')
-	#logging.basicConfig(filename='example.log', level=logging.INFO)
-	#logging.getLogger().addHandler(logging.StreamHandler())
+	# logging.basicConfig(filename='example.log', level=logging.INFO)
+	# logging.getLogger().addHandler(logging.StreamHandler())
 	logging.basicConfig(level=logging.INFO)
 	logging.getLogger("ib_insync.wrapper").disabled = True
 	logging.getLogger("ib_insync.client").disabled = True

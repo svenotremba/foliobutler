@@ -1,1 +1,1 @@
-from foliobutler.starter import click_starter
+from foliobutler.starter import click_starter, create_config
