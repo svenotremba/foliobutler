@@ -43,12 +43,43 @@ def create_config(env=None):
 	else:
 		ibcIniPath = click.prompt('Please enter the path to IBC-Ini-Files:', default=os.path.dirname(env))
 
-	f = open(env, "w")
+	f = open(env, "w+")
 	f.write("EMAIL={}\nAPI_KEY={}\n".format(email, api))
 	f.write("IBC_twsVersion={}\nIBC_gateway={}\n".format(twsversion, gateway))
 	f.write("IBC_tradingMode={}\nIBC_ibcPath='{}'\n".format(tradingmode, ibcPath))
 	f.write("ibcIniPath='{}'\n".format(ibcIniPath))
 	f.close()
+
+
+def add_account(dest_path):
+	source_path = os.path.dirname(__file__)
+	if 'port' in os.environ:
+		port = os.environ['port']
+	else:
+		port = click.prompt('Please enter the port for the account:', default=4001)
+	if 'mode' in os.environ:
+		IBC_tradingMode = os.environ['mode']
+	else:
+		IBC_tradingMode = 'live' if click.confirm('Is it a Live-Account?', default=True) else 'paper'
+	if 'user' in os.environ:
+		IbLoginId = os.environ['user']
+	else:
+		IbLoginId=click.prompt('Please enter IB Username')
+	if 'pass' in os.environ:
+		IbPassword = os.environ['pass']
+	else:
+		IbPassword=click.prompt('Please enter IB Password')
+
+	source = os.path.join(source_path, 'ibc_default_ini')
+	destination = os.path.join(dest_path, str(port)+'.ini')
+	from shutil import copyfile
+	import dotenv
+	copyfile(source, destination)
+	dotenv.set_key(destination, "IbLoginId", IbLoginId)
+	dotenv.set_key(destination, "IbPassword", IbPassword)
+	dotenv.set_key(destination, "OverrideTwsApiPort", str(port), quote_mode="never")
+	dotenv.set_key(destination, "TradingMode", IBC_tradingMode)
+	print("Please protect the Folder ", dest_path)
 
 
 def connected_ib(config, api_ip, api_port):
@@ -188,8 +219,13 @@ def click_starter(env, action, ip, port):
 		f.write("EMAIL={}\nAPI_KEY={}\n".format(email, api))
 		f.close()
 
-
 	config = dotenv_values(env)
+
+	if action.lower() == 'add_account':
+		return add_account(config['ibcIniPath'])
+	else:
+		print(action.lower())
+
 	token = get_token(config['EMAIL'], config['API_KEY'])
 	folios = get_folios(token)
 	for folioname in list(folios)[-3:]:
