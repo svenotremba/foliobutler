@@ -6,8 +6,8 @@ I highly recommend to create a dedicated user with only rights to trade for each
 To create the config for your FolioButler-Account, run foliobutler -action=init\
 If you want to use multiple accounts, specify a different enviroment-file for each account.\
 E.g. on unix/max:\
-foliobutler -action=init -env=~/.user1\
-foliobutler -action=init -env=~/.user2\
+foliobutler -action=init -env=\~/.user1\
+foliobutler -action=init -env=\~/.user2\
 \
 \
 To add a config for IBC, run foliobutler -action=add_account\
