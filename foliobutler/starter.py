@@ -161,7 +161,8 @@ def sync(account, config, api_ip, api_port, fb_positions, fb_orders):
 			order = Order(orderType=fb_orders[stock]['ordertype'],
 						  action='BUY' if todo>0 else 'SELL',
 						  totalQuantity=abs(todo),
-						  tif=fb_orders[stock]['timeinforce']) 
+						  tif=fb_orders[stock]['timeinforce'],
+						  account=account) 
 			trade = ib.placeOrder(contract, order)
 	
 	ib.disconnect()
@@ -192,19 +193,7 @@ def env_location():
 	return os.path.join(env_path(), '.env')
 
 
-@click.command()
-@click.option('--env', default=env_location(),
-			  help='Location of Enviroment-file. Default {}'.format(env_location()))
-@click.option('--action', default='sync', help='init, add_account, sync')
-@click.option('--ip', default='127.0.0.1', help='IP')
-@click.option('--port', default=1707, help='Port')
-def click_starter(env, action, ip, port):
-	logging.basicConfig(level=logging.INFO)
-	logging.getLogger("ib_insync.wrapper").disabled = True
-	logging.getLogger("ib_insync.client").disabled = True
-	logging.getLogger("ib_insync.ib").disabled = True
-	logging.getLogger("urllib3.connectionpool").disabled = True
-
+def starter(env, action, ip, port):
 	if action.lower() == 'init':
 		return create_config(env)
 
@@ -231,7 +220,22 @@ def click_starter(env, action, ip, port):
 	for folioname in list(folios)[-3:]:
 		f = folios[folioname]
 		if f['ib_sync']:
-			sync(f['ib_account'], config, f['ib_ip'], f['ib_port'], f['positions'], f['orders'])
+			sync(f['ib_account'], config, ip or f['ib_ip'], port or f['ib_port'], f['positions'], f['orders'])
+
+
+@click.command()
+@click.option('--env', default=env_location(),
+			  help='Location of Enviroment-file. Default {}'.format(env_location()))
+@click.option('--action', default='sync', help='init, add_account, sync')
+@click.option('--ip', default=None, help='IP')
+@click.option('--port', default=None, help='Port')
+def click_starter(env, action, ip, port):
+	logging.basicConfig(level=logging.INFO)
+	logging.getLogger("ib_insync.wrapper").disabled = True
+	logging.getLogger("ib_insync.client").disabled = True
+	logging.getLogger("ib_insync.ib").disabled = True
+	logging.getLogger("urllib3.connectionpool").disabled = True
+	starter(env, action, ip, port)
 
 
 if __name__ == "__main__":
@@ -243,4 +247,4 @@ if __name__ == "__main__":
 	logging.getLogger("ib_insync.client").disabled = True
 	logging.getLogger("ib_insync.ib").disabled = True
 	logging.getLogger("urllib3.connectionpool").disabled = True
-	click_starter()
+	starter(env_location(), 'sync', None, 7497)
