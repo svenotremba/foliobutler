@@ -1,6 +1,6 @@
 from foliobutler.fb_api import get_token, get_folio, get_folios
 from dotenv import dotenv_values
-import os, click, logging
+import os, click, logging, time
 from ib_insync import IBC, IB, Forex, util, Stock, Order
 
 def create_config(env=None):
@@ -217,10 +217,13 @@ def starter(env, action, ip, port):
 
 	token = get_token(config['EMAIL'], config['API_KEY'])
 	folios = get_folios(token)
-	for folioname in list(folios)[-3:]:
+	for folioname in list(folios):
 		f = folios[folioname]
 		if f['ib_sync']:
 			sync(f['ib_account'], config, ip or f['ib_ip'], port or f['ib_port'], f['positions'], f['orders'])
+			time.sleep(5)
+
+
 
 
 @click.command()
