@@ -2,7 +2,7 @@ import json
 #from flask import json
 import requests
 
-base_url = 'https://www.foliobutler.com/api/'
+base_url = 'https://foliobutler.com/api/'
 auth_url = base_url + "auth/"
 folio_url = base_url + "v1/folio/"
 
