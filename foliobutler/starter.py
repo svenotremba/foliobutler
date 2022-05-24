@@ -26,7 +26,7 @@ def create_config(env=None):
 	if 'IBC_gateway' in os.environ:
 		gateway = os.environ['IBC_gateway'].upper() == 'TRUE'
 	else:
-		gateway = click.confirm('Do you use IB - Gateway?', default=True)
+		gateway = click.confirm('Do you use IB - Gateway?', default=False)
 
 	if 'IBC_tradingMode' in os.environ:
 		tradingmode = os.environ['IBC_tradingMode']
@@ -42,12 +42,18 @@ def create_config(env=None):
 		ibcIniPath = os.environ['ibcIniPath']
 	else:
 		ibcIniPath = click.prompt('Please enter the path to IBC-Ini-Files:', default=os.path.dirname(env))
+	
+	#if 'ib_port' in os.environ:
+	#	ib_port = os.environ['ib_port']
+	#else:
+	#	ib_port = click.prompt('Please enter the TWS Port:', default='7497')
+
 
 	f = open(env, "w+")
 	f.write("EMAIL={}\nAPI_KEY={}\n".format(email, api))
 	f.write("IBC_twsVersion={}\nIBC_gateway={}\n".format(twsversion, gateway))
 	f.write("IBC_tradingMode={}\nIBC_ibcPath='{}'\n".format(tradingmode, ibcPath))
-	f.write("ibcIniPath='{}'\n".format(ibcIniPath))
+	f.write("ibcIniPath='{}'\nib_port='{}'\n".format(ibcIniPath, ib_port))
 	f.close()
 
 
@@ -82,10 +88,10 @@ def add_account(dest_path):
 	print("Please protect the Folder ", dest_path)
 
 
-def connected_ib(config, api_ip, api_port):
+def connected_ib(config, api_ip, api_port, clientId):
 	ib = IB()
 	try:
-		ib.connect(api_ip, api_port, clientId=1)
+		ib.connect(api_ip, api_port, clientId=clientId)
 	except:
 		IBC_commands = {}
 		for c in config:
@@ -99,16 +105,16 @@ def connected_ib(config, api_ip, api_port):
 		ibc = IBC(**IBC_commands)
 		ibc.start()
 		IB.sleep(60)
-		ib.connect(api_ip, api_port, clientId=1)
+		ib.connect(api_ip, api_port, clientId=clientId)
 	return ib
 
 
-def sync(account, config, api_ip, api_port, fb_positions, fb_orders):
+def sync(account, config, api_ip, api_port, fb_positions, fb_orders, clientId):
 	logging.debug("----SYNC---- : {} {} {}".format(account, api_ip, api_port))
 	logging.debug("FB Positions: {}".format(fb_positions))
 	logging.debug("FB Orders: %s ", str(fb_orders))
 
-	ib = connected_ib(config, api_ip, api_port)
+	ib = connected_ib(config, api_ip, api_port, clientId)
 	ib.reqAllOpenOrders()
 	openTrades = ib.openTrades()
 	logging.debug("IB OpenTrades: %s ", openTrades)
@@ -150,9 +156,9 @@ def sync(account, config, api_ip, api_port, fb_positions, fb_orders):
 				ib_ist = ib_ist + ib_stock.position
 
 		todo = ( fb_ist + fb_soll ) - (ib_ist + ib_soll)
-		if todo != 0:
-			logging.info("{} {} {} {} {} => {}".format(stock, fb_ist, fb_soll, ib_ist, ib_soll, todo))
-		logging.info("{} {} {} {} {} => {}".format(stock, fb_ist, fb_soll, ib_ist, ib_soll, todo))
+		#if todo != 0:
+		#	logging.info("{} {} {} {} {} => {}".format(stock, fb_ist, fb_soll, ib_ist, ib_soll, todo))
+		# logging.info("{} {} {} {} {} => {}".format(stock, fb_ist, fb_soll, ib_ist, ib_soll, todo))
 			
 		if todo == fb_soll and todo != 0:
 			logging.info(fb_orders[stock])
@@ -212,16 +218,19 @@ def starter(env, action, ip, port):
 
 	if action.lower() == 'add_account':
 		return add_account(config['ibcIniPath'])
-	else:
-		print(action.lower())
+	#else:
+	#	print(action.lower())
 
 	token = get_token(config['EMAIL'], config['API_KEY'])
 	folios = get_folios(token)
+	clientId = 1
 	for folioname in list(folios):
 		f = folios[folioname]
 		if f['ib_sync']:
-			sync(f['ib_account'], config, ip or f['ib_ip'], port or f['ib_port'], f['positions'], f['orders'])
-			time.sleep(5)
+			#print( port or f['ib_port'])
+			sync(f['ib_account'], config, ip or f['ib_ip'], port or f['ib_port'], f['positions'], f['orders'], clientId)
+			time.sleep(1)
+			clientId = clientId + 1
 
 
 
