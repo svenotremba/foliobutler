@@ -237,53 +237,53 @@ def starter(env, action, ip, port):
 			clientId = clientId + 1
 
 
-
-
 @click.command()
 @click.option('--env', default=env_location(),
-			  help='Location of Enviroment-file. Default {}'.format(env_location()))
+              help='Location of Enviroment-file. Default {}'
+              .format(env_location()))
 @click.option('--action', default='sync', help='init, add_account, sync')
 @click.option('--ip', default=None, help='IP')
 @click.option('--port', default=None, help='Port')
 def click_starter(env, action, ip, port):
-	logging.basicConfig(level=logging.INFO)
-	logging.getLogger("ib_insync.wrapper").disabled = True
-	logging.getLogger("ib_insync.client").disabled = True
-	logging.getLogger("ib_insync.ib").disabled = True
-	logging.getLogger("urllib3.connectionpool").disabled = True
-	starter(env, action, ip, port)
+    logging.basicConfig(level=logging.INFO)
+    logging.getLogger("ib_insync.wrapper").disabled = True
+    logging.getLogger("ib_insync.client").disabled = True
+    logging.getLogger("ib_insync.ib").disabled = True
+    logging.getLogger("urllib3.connectionpool").disabled = True
+    starter(env, action, ip, port)
 
 
 if __name__ == "__main__":
-	os.system('cls')
-	# logging.basicConfig(filename='example.log', level=logging.INFO)
-	# logging.getLogger().addHandler(logging.StreamHandler())
-	logging.basicConfig(level=logging.INFO)
-	logging.getLogger("ib_insync.wrapper").disabled = True
-	logging.getLogger("ib_insync.client").disabled = True
-	logging.getLogger("ib_insync.ib").disabled = True
-	logging.getLogger("urllib3.connectionpool").disabled = True
-	#starter(env_location(), 'sync', None, 7497)
-	env = env_location()
-	if not os.path.exists(os.path.dirname(env)):
-		logging.error("Enviroment Path not exists: {}".format(os.path.dirname(env)))
-		if click.confirm('Do you want to create the folder?', default=True):
-			os.mkdir(os.path.dirname(env))
-	if not os.path.exists(env):
-		email = input("Enter your Foliobutler Email: ")
-		api = input("Enter your Foliobutler Api-Key: ")
-		f = open(env, "a")
-		f.write("EMAIL={}\nAPI_KEY={}\n".format(email, api))
-		f.close()
+    os.system('cls')
+    # logging.basicConfig(filename='example.log', level=logging.INFO)
+    # logging.getLogger().addHandler(logging.StreamHandler())
+    logging.basicConfig(level=logging.INFO)
+    logging.getLogger("ib_insync.wrapper").disabled = True
+    logging.getLogger("ib_insync.client").disabled = True
+    logging.getLogger("ib_insync.ib").disabled = True
+    logging.getLogger("urllib3.connectionpool").disabled = True
+    # starter(env_location(), 'sync', None, 7497)
+    env = env_location()
+    if not os.path.exists(os.path.dirname(env)):
+        logging.error("Enviroment Path not exists: {}"
+                      .format(os.path.dirname(env)))
+        if click.confirm('Do you want to create the folder?', default=True):
+            os.mkdir(os.path.dirname(env))
+    if not os.path.exists(env):
+        email = input("Enter your Foliobutler Email: ")
+        api = input("Enter your Foliobutler Api-Key: ")
+        f = open(env, "a")
+        f.write("EMAIL={}\nAPI_KEY={}\n".format(email, api))
+        f.close()
 
-	config = dotenv_values(env)
+    config = dotenv_values(env)
 
-
-	token = get_token(config['EMAIL'], config['API_KEY'])
-	folios = get_folios(token)
-	for folioname in list(folios):
-		f = folios[folioname]
-		if f['ib_sync']:
-			print(f['orders'])
-			#sync(f['ib_account'], config, ip or f['ib_ip'], port or f['ib_port'], f['positions'], f['orders'])
-			#time.sleep(5)
+    token = get_token(config['EMAIL'], config['API_KEY'])
+    folios = get_folios(token)
+    for folioname in list(folios):
+        f = folios[folioname]
+        if f['ib_sync']:
+            print(f['orders'])
+            # sync(f['ib_account'], config, ip or f['ib_ip'], port
+            # or f['ib_port'], f['positions'], f['orders'])
+            # time.sleep(5)
