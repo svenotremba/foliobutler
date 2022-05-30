@@ -1,22 +1,26 @@
-from foliobutler.fb_api import get_token, get_folio, get_folios
+import os
+import time
+import click
+import logging
+from foliobutler.fb_api import get_token, get_folios
 from dotenv import dotenv_values
-import os, click, logging, time
 from ib_insync import IBC, IB, Forex, util, Stock, Order
 
+
 def create_config(env=None):
-	if env == None:
-		env = env_location()
-	if not os.path.exists(os.path.dirname(env)):
-		os.mkdir(os.path.dirname(env))
-	if 'EMAIL' in os.environ:
-		email = os.environ['EMAIL']
-	else:
-		email = input("Enter your Foliobutler Email: ")
-	
-	if 'API_KEY' in os.environ:
-		api = os.environ['API_KEY']
-	else:
-		api = input("Enter your Foliobutler Api-Key: ")
+    if env is None:
+        env = env_location()
+    if not os.path.exists(os.path.dirname(env)):
+        os.mkdir(os.path.dirname(env))
+    if 'EMAIL' in os.environ:
+        email = os.environ['EMAIL']
+    else:
+        email = input("Enter your Foliobutler Email: ")
+
+    if 'API_KEY' in os.environ:
+        api = os.environ['API_KEY']
+    else:
+        api = input("Enter your Foliobutler Api-Key: ")
 
 	if 'IBC_twsVersion' in os.environ:
 		twsversion = os.environ['IBC_twsVersion']
