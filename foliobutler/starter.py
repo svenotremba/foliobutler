@@ -22,7 +22,11 @@ def create_config(env=None):
         api = os.environ['API_KEY']
     else:
         api = input("Enter your Foliobutler Api-Key: ")
+<<<<<<< HEAD
 
+=======
+	
+>>>>>>> afe18c54049f804a24b3e92d37b078a79f3f2e52
     if 'IBC_twsVersion' in os.environ:
         twsversion = os.environ['IBC_twsVersion']
     else:
@@ -36,35 +40,26 @@ def create_config(env=None):
     if 'IBC_tradingMode' in os.environ:
         tradingmode = os.environ['IBC_tradingMode']
     else:
-        tradingmode = 'live' if click.confirm('Live-Trading?', default=True)\
-                             else 'paper'
-
+        tradingmode = 'live' if click.confirm('Live-Trading?', default=True) else 'paper'
+    
     if 'IBC_ibcPath' in os.environ:
         ibcPath = os.environ['IBC_ibcPath']
     else:
-        ibcPath = click.prompt('Please enter the path to IBC:',
-                               default=os.path.join(
-                                   os.path.expanduser("~"),
-                                   'opt', 'ibc'))
-
+        ibcPath = click.prompt('Please enter the path to IBC:', default=os.path.join(os.path.expanduser("~"),'opt', 'ibc'))
+    
     if 'ibcIniPath' in os.environ:
         ibcIniPath = os.environ['ibcIniPath']
     else:
-        ibcIniPath = click.prompt('Please enter the path to IBC-Ini-Files:',
-                                  default=os.path.dirname(env))
-
-    # if 'ib_port' in os.environ:
-        # ib_port = os.environ['ib_port']
-    # else:
-        # ib_port = click.prompt('Please enter the TWS Port:', default='7497')
-
+        ibcIniPath = click.prompt('Please enter the path to IBC-Ini-Files:', default=os.path.dirname(env))
+	#if 'ib_port' in os.environ:
+	#	ib_port = os.environ['ib_port']
+	#else:
+	#	ib_port = click.prompt('Please enter the TWS Port:', default='7497')
     f = open(env, "w+")
     f.write("EMAIL={}\nAPI_KEY={}\n".format(email, api))
     f.write("IBC_twsVersion={}\nIBC_gateway={}\n".format(twsversion, gateway))
-    f.write("IBC_tradingMode={}\n".format(tradingmode))
-    f.write("IBC_ibcPath='{}'\n".format(ibcPath))
-    f.write("ibcIniPath='{}'\n".format(ibcIniPath))
-    #f.write("ib_port='{}'\n".format(ib_port))
+    f.write("IBC_tradingMode={}\nIBC_ibcPath='{}'\n".format(tradingmode, ibcPath))
+    f.write("ibcIniPath='{}'\nib_port='{}'\n".format(ibcIniPath, ib_port))
     f.close()
 
 
