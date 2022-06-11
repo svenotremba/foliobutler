@@ -22,11 +22,6 @@ def create_config(env=None):
         api = os.environ['API_KEY']
     else:
         api = input("Enter your Foliobutler Api-Key: ")
-<<<<<<< HEAD
-
-=======
-	
->>>>>>> afe18c54049f804a24b3e92d37b078a79f3f2e52
     if 'IBC_twsVersion' in os.environ:
         twsversion = os.environ['IBC_twsVersion']
     else:
@@ -40,26 +35,34 @@ def create_config(env=None):
     if 'IBC_tradingMode' in os.environ:
         tradingmode = os.environ['IBC_tradingMode']
     else:
-        tradingmode = 'live' if click.confirm('Live-Trading?', default=True) else 'paper'
-    
+        tradingmode = 'live' if click.confirm('Live-Trading?', default=True)\
+                             else 'paper'
+
     if 'IBC_ibcPath' in os.environ:
         ibcPath = os.environ['IBC_ibcPath']
     else:
-        ibcPath = click.prompt('Please enter the path to IBC:', default=os.path.join(os.path.expanduser("~"),'opt', 'ibc'))
-    
+        ibcPath = click.prompt('Please enter the path to IBC:',
+                               default=os.path.join(
+                                   os.path.expanduser("~"), 'opt', 'ibc'))
+
     if 'ibcIniPath' in os.environ:
         ibcIniPath = os.environ['ibcIniPath']
     else:
-        ibcIniPath = click.prompt('Please enter the path to IBC-Ini-Files:', default=os.path.dirname(env))
-	#if 'ib_port' in os.environ:
-	#	ib_port = os.environ['ib_port']
-	#else:
-	#	ib_port = click.prompt('Please enter the TWS Port:', default='7497')
+        ibcIniPath = click.prompt('Please enter the path to IBC-Ini-Files:',
+                                  default=os.path.dirname(env))
+    if 'ib_port' in os.environ:
+        ib_port = os.environ['ib_port']
+    else:
+        ib_port = click.prompt('Please enter the TWS Port:', default = '7497')
+
     f = open(env, "w+")
-    f.write("EMAIL={}\nAPI_KEY={}\n".format(email, api))
+    f.write("EMAIL={}\n".format(email))
+    f.write("API_KEY={}\n".format(api))
     f.write("IBC_twsVersion={}\nIBC_gateway={}\n".format(twsversion, gateway))
-    f.write("IBC_tradingMode={}\nIBC_ibcPath='{}'\n".format(tradingmode, ibcPath))
-    f.write("ibcIniPath='{}'\nib_port='{}'\n".format(ibcIniPath, ib_port))
+    f.write("IBC_tradingMode={}\n".format(tradingmode))
+    f.write("IBC_ibcPath='{}'\n".format(ibcPath))
+    f.write("ibcIniPath='{}'\n".format(ibcIniPath))
+    f.write("ib_port='{}'\n".format(ib_port))
     f.close()
 
 
@@ -131,11 +134,13 @@ def sync(account, config, api_ip, api_port, fb_positions, fb_orders, clientId):
     portfolio = ib.positions(account=account)
     logging.debug("IB Portfolio: %s ", portfolio)
 
-    current_ib_stocks = [x.contract.symbol + "_" + x.contract.secType + "_" + x.contract.currency
-						 for x in portfolio if x.contract.currency == 'USD']
-    current_ib_orders = [x.contract.symbol + "_" + x.contract.secType + "_" + x.contract.currency
-						 for x in openTrades if x.order.account==account]
-    current_fb_stocks = [x  for x in fb_positions.keys()]
+    current_ib_stocks = [x.contract.symbol + "_" + x.contract.secType + "_"
+                         + x.contract.currency
+                         for x in portfolio if x.contract.currency == 'USD']
+    current_ib_orders = [x.contract.symbol + "_" + x.contract.secType + "_"
+                         + x.contract.currency
+                         for x in openTrades if x.order.account == account]
+    current_fb_stocks = [x for x in fb_positions.keys()]
     current_fb_orders = [x for x in fb_orders]
 
     allset = set(current_ib_stocks + current_ib_orders +
@@ -155,32 +160,37 @@ def sync(account, config, api_ip, api_port, fb_positions, fb_orders, clientId):
                ib_stock.contract.currency == currency and\
                ib_stock.contract.secType == type and\
                ib_stock.order.account == account:
-                if ib_stock.orderStatus.status in ['PreSubmitted', 'Submitted']:
+                if ib_stock.orderStatus.status in ['PreSubmitted',
+                                                   'Submitted']:
                     if ib_stock.order.action == 'SELL':
                         ib_soll = ib_soll - ib_stock.order.totalQuantity
                     else:
                         ib_soll = ib_soll + ib_stock.order.totalQuantity
 
                 else:
-                    raise Exception("Unknown status: {}".format(ib_stock['orderState'].status))
+                    raise Exception("Unknown status: " +
+                                    ib_stock['orderState'].status)
         for ib_stock in portfolio:
-            if ib_stock.contract.symbol == symbol and ib_stock.contract.currency == currency and ib_stock.contract.secType == type:
+            if ib_stock.contract.symbol == symbol and
+               ib_stock.contract.currency == currency and ib_stock.contract.secType == type:
                 ib_ist = ib_ist + ib_stock.position
 
         todo = (fb_ist + fb_soll) - (ib_ist + ib_soll)
         # if todo != 0:
-        # logging.info("{} {} {} {} {} => {}".format(stock, fb_ist, fb_soll, ib_ist, ib_soll, todo))
-        # logging.info("{} {} {} {} {} => {}".format(stock, fb_ist, fb_soll, ib_ist, ib_soll, todo))
+        # logging.info("{} {} {} {} {} => {}".format(stock, fb_ist, fb_soll,
+            #ib_ist, ib_soll, todo))
+        # logging.info("{} {} {} {} {} => {}".format(stock, fb_ist, fb_soll,
+            #ib_ist, ib_soll, todo))
 
         if todo == fb_soll and todo != 0:
             logging.info(fb_orders[stock])
             contract = Stock(symbol, 'SMART', currency)
             contracts = ib.qualifyContracts(contract)
             order = Order(orderType=fb_orders[stock]['ordertype'],
-                          action='BUY' if todo>0 else 'SELL',
+                          action='BUY' if todo > 0 else 'SELL',
                           totalQuantity=abs(todo),
                           tif=fb_orders[stock]['timeinforce'],
-                          account=account) 
+                          account=account)
             trade = ib.placeOrder(contract, order)
 
     ib.disconnect()
