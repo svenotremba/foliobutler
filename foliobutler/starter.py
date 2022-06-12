@@ -53,7 +53,7 @@ def create_config(env=None):
     if 'ib_port' in os.environ:
         ib_port = os.environ['ib_port']
     else:
-        ib_port = click.prompt('Please enter the TWS Port:', default = '7497')
+        ib_port = click.prompt('Please enter the TWS Port:', default='7497')
 
     f = open(env, "w+")
     f.write("EMAIL={}\n".format(email))
@@ -104,7 +104,7 @@ def connected_ib(config, api_ip, api_port, clientId):
     ib = IB()
     try:
         ib.connect(api_ip, api_port, clientId=clientId)
-    except:
+    except Exception:
         IBC_commands = {}
         for c in config:
             if c.startswith('IBC_'):
@@ -167,32 +167,36 @@ def sync(account, config, api_ip, api_port, fb_positions, fb_orders, clientId):
                     else:
                         ib_soll = ib_soll + ib_stock.order.totalQuantity
 
+                elif ib_stock.orderStatus.status in ['PendingCancel']:
+                    pass
                 else:
                     raise Exception("Unknown status: " +
-                                    ib_stock['orderState'].status)
+                                    ib_stock.orderStatus.status)
         for ib_stock in portfolio:
-            if ib_stock.contract.symbol == symbol and
-               ib_stock.contract.currency == currency and ib_stock.contract.secType == type:
+            if ib_stock.contract.symbol == symbol and\
+               ib_stock.contract.currency == currency and\
+               ib_stock.contract.secType == type:
                 ib_ist = ib_ist + ib_stock.position
 
         todo = (fb_ist + fb_soll) - (ib_ist + ib_soll)
         # if todo != 0:
         # logging.info("{} {} {} {} {} => {}".format(stock, fb_ist, fb_soll,
-            #ib_ist, ib_soll, todo))
+        # ib_ist, ib_soll, todo))
         # logging.info("{} {} {} {} {} => {}".format(stock, fb_ist, fb_soll,
-            #ib_ist, ib_soll, todo))
+        # ib_ist, ib_soll, todo))
 
         if todo == fb_soll and todo != 0:
             logging.info(fb_orders[stock])
             contract = Stock(symbol, 'SMART', currency)
             contracts = ib.qualifyContracts(contract)
+            print(contracts)
             order = Order(orderType=fb_orders[stock]['ordertype'],
                           action='BUY' if todo > 0 else 'SELL',
                           totalQuantity=abs(todo),
                           tif=fb_orders[stock]['timeinforce'],
                           account=account)
             trade = ib.placeOrder(contract, order)
-
+            print(trade)
     ib.disconnect()
 
 
@@ -225,7 +229,7 @@ def starter(env, action, ip, port):
         return create_config(env)
 
     if not os.path.exists(os.path.dirname(env)):
-        logging.error("Enviroment Path not exists: {}".format(os.path.dirname(env)))
+        logging.error("Enviroment Path not exists: " + os.path.dirname(env))
         if click.confirm('Do you want to create the folder?', default=True):
             os.mkdir(os.path.dirname(env))
     if not os.path.exists(env):
