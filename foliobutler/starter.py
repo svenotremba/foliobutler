@@ -128,7 +128,12 @@ def sync(account, config, api_ip, api_port, fb_positions, fb_orders, clientId):
     logging.debug("FB Orders: %s ", str(fb_orders))
 
     ib = connected_ib(config, api_ip, api_port, clientId)
+    accountlist = ib.managedAccounts()
+    if account not in accountlist:
+        ib.disconnect()
+        return
     ib.reqAllOpenOrders()
+
     openTrades = ib.openTrades()
     logging.debug("IB OpenTrades: %s ", openTrades)
     portfolio = ib.positions(account=account)
@@ -186,17 +191,18 @@ def sync(account, config, api_ip, api_port, fb_positions, fb_orders, clientId):
         # ib_ist, ib_soll, todo))
 
         if todo == fb_soll and todo != 0:
-            logging.info(fb_orders[stock])
+            
             contract = Stock(symbol, 'SMART', currency)
             contracts = ib.qualifyContracts(contract)
-            print(contracts)
+            logging.debug(contracts)
+            logging.info("{} * {}".format(abs(todo), symbol))
             order = Order(orderType=fb_orders[stock]['ordertype'],
                           action='BUY' if todo > 0 else 'SELL',
                           totalQuantity=abs(todo),
                           tif=fb_orders[stock]['timeinforce'],
                           account=account)
             trade = ib.placeOrder(contract, order)
-            print(trade)
+            logging.debug(trade)
     ib.disconnect()
 
 
