@@ -200,6 +200,7 @@ def sync(account, config, api_ip, api_port, fb_positions, fb_orders, clientId):
                           action='BUY' if todo > 0 else 'SELL',
                           totalQuantity=abs(todo),
                           tif=fb_orders[stock]['timeinforce'],
+                          lmtPrice=fb_orders[stock]['limit_price'],
                           account=account)
             trade = ib.placeOrder(contract, order)
             logging.debug(trade)
