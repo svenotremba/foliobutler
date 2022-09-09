@@ -1,5 +1,5 @@
 import json
-import requests
+import requests  # type: ignore
 
 base_url = 'https://foliobutler.com/api/'
 auth_url = base_url + "auth/"
