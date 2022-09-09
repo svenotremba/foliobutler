@@ -3,7 +3,7 @@ import time
 import click
 import logging
 from datetime import datetime
-from foliobutler.fb_api import get_token, get_folios
+from foliobutler.fb_api import get_token, get_folios  # type: ignore
 from dotenv import dotenv_values
 from ib_insync import IBC, IB, Forex, util, Stock, Order
 
@@ -191,7 +191,7 @@ def sync(account, config, api_ip, api_port, fb_positions, fb_orders, clientId):
         # ib_ist, ib_soll, todo))
 
         if todo == fb_soll and todo != 0:
-            
+
             contract = Stock(symbol, 'SMART', currency)
             contracts = ib.qualifyContracts(contract)
             logging.debug(contracts)
